@@ -10,7 +10,6 @@ public class Offer {
     protected String description;
     Offer(String client){
         this.client = client;
-
        }
 
        public void setNrOfe(String nrOfe){

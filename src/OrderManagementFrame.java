@@ -5,14 +5,14 @@ import javax.swing.text.MaskFormatter;
 import javax.swing.text.Position;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.*;
+
+import static java.lang.System.exit;
 
 
 public class OrderManagementFrame extends JFrame implements ActionListener {
@@ -92,10 +92,19 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
     static int offerCounter = 0;
     DecimalFormat nrOfeFormat = new DecimalFormat("0000");
     //////////////
-    OrderManagementFrame() throws ParseException {
+    OrderManagementFrame() throws ParseException, IOException, ClassNotFoundException {
         this.setPreferredSize(new Dimension(1000, 1000));
         this.setMinimumSize(new Dimension(800, 400));
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent evt) {
+                try {
+                    saveClients();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                exit(0);
+            }
+        });
         this.setLayout(new BorderLayout());
         //Top panel
 
@@ -248,7 +257,18 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         addClientFrame.add(panel1, BorderLayout.CENTER);
         addClientFrame.add(panel2, BorderLayout.SOUTH);
         addClientFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        clients = new ArrayList<>();
+        if(loadClients() == null){
+            clients = new ArrayList<>();
+        }else{
+            try {
+                clients= loadClients();
+                for(Client c:clients){
+                    addNode(c.getCompanyName());
+                    }
+                }catch(Exception e){
+                e.printStackTrace();
+                    }
+        }
         //////////////////////AddOfferFrame///////////////////////
         addOfferFrame = new JFrame();
         addOfferFrame.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -345,7 +365,9 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         panel3AddOffer.add(exitButtonAddOffer);
 
         offers = new ArrayList<>();
+
     }
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -382,6 +404,7 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         }
         if (e.getSource() == buttonEditOffer) {
             // In the future, I will do it.
+            showClients();
         }
         if(e.getSource()== buttonRemoveOffer){
             if(indexOfSelectedRow == -1){
@@ -549,5 +572,21 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         for( int i = rowCount; i<=offerCounter;i++){
             defaultTableModel.addRow(new Object[]{offersTemp.get(i).getNrOfe(),offersTemp.get(i).getClient(),offersTemp.get(i).getTitle(),offersTemp.get(i).getDateOfOffer().toString(),offersTemp.get(i).getDateOfExecution().toString(),Double.toString(offersTemp.get(i).getPrice())});
         }
+    }
+     void saveClients() throws IOException {
+        FileOutputStream fos = new FileOutputStream("clients.ser");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(clients);
+        oos.close();
+        System.out.println("saved");
+    }
+     ArrayList<Client> loadClients() throws IOException, ClassNotFoundException {
+        FileInputStream fis = new FileInputStream("clients.ser");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+
+        ArrayList <Client> clientsLoaded;
+         clientsLoaded = (ArrayList<Client>) ois.readObject();
+         ois.close();
+         return clientsLoaded;
     }
 }

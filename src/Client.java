@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Locale;
 
-public class Client implements Comparable<Client>{
+public class Client implements Comparable<Client>, Serializable {
     private String companyName;
     private String companyNip;
     private String cityName;
