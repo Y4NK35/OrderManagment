@@ -257,18 +257,15 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         addClientFrame.add(panel1, BorderLayout.CENTER);
         addClientFrame.add(panel2, BorderLayout.SOUTH);
         addClientFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        if(loadClients() == null){
+        try {
+            clients= loadClients();
+            for(Client c:clients){
+                addNode(c.getCompanyName());
+                }
+            }catch(Exception e){
+            e.printStackTrace();
             clients = new ArrayList<>();
-        }else{
-            try {
-                clients= loadClients();
-                for(Client c:clients){
-                    addNode(c.getCompanyName());
-                    }
-                }catch(Exception e){
-                e.printStackTrace();
-                    }
-        }
+            }
         //////////////////////AddOfferFrame///////////////////////
         addOfferFrame = new JFrame();
         addOfferFrame.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -499,14 +496,14 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         }
     }
 
-    // setting default values in textFields
+    // set default values in textFields
     public void setDefaultAddClientFrame(){
         companyNameTextField.setText("Name");
         companyNipTextField.setText("0000000000");
         cityNameTextField.setText("City");
         companyPostCodeFTextField.setText("00000");
     }
-    // Check that entered data are already created
+    // Check that entered data are in database
     public boolean clientExist (String companyName, String companyNip){
         int l = clients.size();
         boolean clientExist = false;
@@ -563,7 +560,7 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         dateOfOfferTextFieldAddOffer.setText("20220101");
         descriptionTextAreaAddOffer.setText("Add description");
         timeToExecutionTextFieldAddOffer.setText("1");
-        priceTextFieldAddOffer.setText("0000");
+        priceTextFieldAddOffer.setText("0");
     }
     // Add offers to table
     public void createTableData(ArrayList<Offer> offersTemp){
@@ -581,12 +578,12 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         System.out.println("saved");
     }
      ArrayList<Client> loadClients() throws IOException, ClassNotFoundException {
+
         FileInputStream fis = new FileInputStream("clients.ser");
         ObjectInputStream ois = new ObjectInputStream(fis);
-
         ArrayList <Client> clientsLoaded;
-         clientsLoaded = (ArrayList<Client>) ois.readObject();
-         ois.close();
-         return clientsLoaded;
+        clientsLoaded = (ArrayList<Client>) ois.readObject();
+        ois.close();
+        return clientsLoaded;
     }
 }
