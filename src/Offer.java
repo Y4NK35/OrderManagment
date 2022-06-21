@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Offer {
+public class Offer implements Serializable {
     protected String nrOfe;
     protected String client;
     protected String title;

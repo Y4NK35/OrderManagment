@@ -1,3 +1,5 @@
+import org.w3c.dom.css.Counter;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
@@ -89,7 +91,7 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
     JTextArea descriptionTextAreaAddOffer;
     JButton saveButtonAddOffer;
     JButton exitButtonAddOffer;
-    static int offerCounter = 0;
+    static int offerCounter;
     DecimalFormat nrOfeFormat = new DecimalFormat("0000");
     //////////////
     OrderManagementFrame() throws ParseException, IOException, ClassNotFoundException {
@@ -99,6 +101,8 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
             public void windowClosing(WindowEvent evt) {
                 try {
                     saveClients();
+                    saveOffers();
+                    saveCounter();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -148,6 +152,7 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         buttonEditOffer.setPreferredSize(new Dimension(150, 70));
         buttonEditOffer.setMaximumSize(new Dimension(150, 70));
         buttonEditOffer.addActionListener(this);
+        buttonEditOffer.setEnabled(false);
 
         buttonRemoveOffer = new JButton("Remove Offer");
         buttonRemoveOffer.setPreferredSize(new Dimension(150, 70));
@@ -175,8 +180,8 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         clientsTree.addTreeSelectionListener(new TreeSelectionListener(){
             @Override
             public void valueChanged(TreeSelectionEvent e) {
-                selectedNode = (DefaultMutableTreeNode)
-                        clientsTree.getLastSelectedPathComponent();
+                    selectedNode = (DefaultMutableTreeNode)
+                    clientsTree.getLastSelectedPathComponent();
             }
         });
         westPanel.add(clientsTree);
@@ -266,6 +271,21 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
             e.printStackTrace();
             clients = new ArrayList<>();
             }
+        try {
+            offerCounter= loadCounter();
+        }catch(Exception e){
+            e.printStackTrace();
+            offerCounter = 0;
+        }
+        try {
+            offers= loadOffers();
+            createTableData(offers);
+
+        }catch(Exception e){
+            e.printStackTrace();
+            offers = new ArrayList<>();
+        }
+
         //////////////////////AddOfferFrame///////////////////////
         addOfferFrame = new JFrame();
         addOfferFrame.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -360,9 +380,6 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         panel2AddOffer.add(descriptionTextAreaAddOffer,BorderLayout.CENTER);
         panel3AddOffer.add(saveButtonAddOffer);
         panel3AddOffer.add(exitButtonAddOffer);
-
-        offers = new ArrayList<>();
-
     }
 
 
@@ -392,7 +409,6 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
             }else {
                 addOfferFrame.setVisible(true);
                 this.setEnabled(false);
-                System.out.println(selectedNode);
                 clientTextFieldAddOffer.setText(selectedNode.toString());
                 offerNrTextFieldAddOffer.setText("OFE "+ nrOfeFormat.format(offerCounter));
                 setDefaultAddOfferFrame();
@@ -400,15 +416,16 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
             }
         }
         if (e.getSource() == buttonEditOffer) {
-            // In the future, I will do it.
-            showClients();
+            //ToDo
+            // In the future... I will do it.
+            // EDIT OFFER button events.
+            showClients(); // just for tests
         }
         if(e.getSource()== buttonRemoveOffer){
             if(indexOfSelectedRow == -1){
                 JOptionPane.showMessageDialog(null,"Select offer.");
             }else{
                 offers.remove(indexOfSelectedRow);
-                System.out.println(indexOfSelectedRow);
                 defaultTableModel.removeRow(indexOfSelectedRow);
             }
         }
@@ -423,7 +440,6 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
                     tempClient.setCompanyNip(companyNipTextField.getText());
                     tempClient.setCityName(cityNameTextField.getText());
                     tempClient.setPostCode(companyPostCodeFTextField.getText());
-                    System.out.println("Added");
                     clients.add(tempClient);
                     addNode(tempClient.getCompanyName());
                     setDefaultAddClientFrame();
@@ -442,7 +458,6 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
                     tempClient.setCompanyNip(companyNipTextField.getText());
                     tempClient.setCityName(cityNameTextField.getText());
                     tempClient.setPostCode(companyPostCodeFTextField.getText());
-                    System.out.println("Added");
                     clients.add(tempClient);
                     addNode(tempClient.getCompanyName());
                     addClientFrame.dispose();
@@ -575,7 +590,6 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         ObjectOutputStream oos = new ObjectOutputStream(fos);
         oos.writeObject(clients);
         oos.close();
-        System.out.println("saved");
     }
      ArrayList<Client> loadClients() throws IOException, ClassNotFoundException {
 
@@ -585,5 +599,33 @@ public class OrderManagementFrame extends JFrame implements ActionListener {
         clientsLoaded = (ArrayList<Client>) ois.readObject();
         ois.close();
         return clientsLoaded;
+    }
+    void saveOffers() throws IOException {
+        FileOutputStream fos = new FileOutputStream("offers.ser");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(offers);
+        oos.close();
+    }
+    ArrayList<Offer> loadOffers() throws IOException, ClassNotFoundException {
+        FileInputStream fis = new FileInputStream("offers.ser");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        ArrayList <Offer> offersLoaded;
+        offersLoaded = (ArrayList<Offer>) ois.readObject();
+        ois.close();
+        return offersLoaded;
+    }
+    void saveCounter() throws IOException {
+        FileOutputStream fos = new FileOutputStream("counter.ser");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(offerCounter);
+        oos.close();
+    }
+    int loadCounter() throws IOException, ClassNotFoundException {
+        FileInputStream fis = new FileInputStream("counter.ser");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        int tempCounter;
+        tempCounter = (int) ois.readObject();
+        ois.close();
+        return tempCounter;
     }
 }
